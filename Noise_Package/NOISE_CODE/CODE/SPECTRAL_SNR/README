@@ -1,0 +1,24 @@
+lin_rms
+   Inside this directory,  spectral_snr_f calculate  the SNR using minV and 
+   maxV obtained from pred*_R at the shortest perid and the longtest period
+   ( forexample, 5 and 100) 
+   ,which is read from SAC headfile user4 and user5. 
+   Thus, this version requires the prior parameter user4 user5 in each head 
+   of SAC file. 
+
+  spectral_snr_f_V2 calculate  the SNR using minV and 
+   maxV of 1 and 4. 
+  
+  The problem with these version is  time window calculated uisng minT and 
+   maxT is too long. This time window may include precursory signals. 
+
+
+yang_lin_rms
+   spectral_snr_f calculate  the SNR using minV and 
+   maxV obtained from pred*_R at the short    perid and     longt    period
+   of each small frequency band instead of the whole band in lin_rms.
+  Thus this version can more accurately calculate the time window of signals.
+
+
+### To make, just run:
+### gfortran -o find_rms_per_v2 find_rms_per_v2.f
