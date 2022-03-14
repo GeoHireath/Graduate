@@ -1,0 +1,67 @@
+#!/bin/csh -f
+
+set STA1 = H0810
+set STA2 = H1250
+set border = 8/45/1.5/5.0
+set size = 11/6.3
+set OFN = CC_disp.ps
+
+gmtset BASEMAP_TYPE plain TICK_LENGTH -0.2c
+gmtset LABEL_FONT_SIZE 20
+gmtset ANOT_FONT_SIZE 14
+gmtset HEADER_FONT_SIZE 24
+gmtset FRAME_PEN 1.0p
+gmtset ANOT_OFFSET 0.2c
+gmtset LABEL_OFFSET 0.05c
+gmtset HEADER_OFFSET 0.05c
+
+# plot stacked cross-correlation at 10-s period
+sac << LOOP
+r COR*SAC
+bp c 0.08 0.12 n 2 p 2
+#bp c 0.04 0.06 n 2 p 2
+ch O 0
+w append .bp
+q
+LOOP
+
+ls COR*SAC.bp | saclst dist f `cat` | sort -nr -k 2 | awk '{print $1}' | pssac2 -JX12/16 -R-300/300/0/600 -Ekt-3 -M1.5/0 -B:."Stacked CC":a100f50:"t (s)":/a200f100:"distance (km)":WSne -K > $OFN
+
+# plot dispersion curves
+set ampfile  = COR_${STA1}_${STA2}.SAC_s_2_AMP
+set dispfile = COR_${STA1}_${STA2}.SAC_s_2_DISP.1
+set preddisp = ../GLOBAL_DISP01/COR_${STA1}_${STA2}.SAC_PRED
+set title = ${STA1}_${STA2}_FTAN
+if (-e $ampfile ) then
+triangulate $ampfile -R$border -I0.5/0.1 -G$ampfile.grd > junk
+else 
+set ampfile  = COR_${STA2}_${STA1}.SAC_s_2_AMP
+set dispfile = COR_${STA2}_${STA1}.SAC_s_2_DISP.1
+triangulate $ampfile -R$border -I0.5/0.1 -G$ampfile.grd > junk
+endif
+
+grd2cpt $ampfile.grd -Cseis -I > tmp.cpt 
+echo B  0  36  227  >> tmp.cpt
+echo N  255  255 255 >> tmp.cpt
+grdimage $ampfile.grd -Ctmp.cpt -E180/90 -JX$size -R$border -B:.${title}:a10f5:"period (s)":/a1f1:"group vel (km/s)":WSne -X13.8 -Y9.7 -P -K -O >> $OFN
+awk '{print $3,$4}' $dispfile |psxy -R -JX -W1.5p/0 -W1.5p/0/0/255 -K -O >> $OFN
+if (-e $preddisp) then
+awk '{print $1,$2}' $preddisp |psxy -R -JX -H1 -W1.5p/0 -K -O >> $OFN
+else 
+set preddisp = ../GLOBAL_DISP01/COR_${STA2}_${STA1}.SAC_PRED
+awk '{print $1,$2}' $preddisp |psxy -R -JX -H1 -W1.5p/0 -K -O >> $OFN
+endif
+
+awk '{print $3,$4}' $dispfile |psxy -R -JX -W1.5p/0 -W1.5p/0/0/255 -JX$size -R$border -B:.${title}:a10f5:"period (s)":/a1f1:"velocity (km/s)":WSne -Y-9.7 -K -O >> $OFN
+awk '{print $3,$5}' $dispfile |psxy -R -JX -W1.5p/0 -W1.5p,red -K -O >>$OFN
+pstext -R -JX -N -K -O -Gred << end >> $OFN
+10 4.7 20 0 0 LM phaseV
+end
+pstext -R -JX -K -N -O -Gblue << end >> $OFN
+10 4.3 20 0 0 LM groupV
+end
+
+ps2pdf $OFN
+rm -f $OFN
+rm -f junk *grd tmp.cpt
+rm -f .gmtcommands4
