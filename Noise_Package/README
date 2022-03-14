@@ -1,0 +1,60 @@
+【前期准备】
+1. 安装SAC
+网上有很多教程可参考，需设好环境变量
+
+2. 安装FFTW
+tar -zxvf fftw-3.3.8.tar.gz
+cd fftw-3.3.8
+./configure --prefix={安装目录的绝对路径}/FFTW
+make
+make install
+# 注意：./configure时还可加一些后缀，参考网上教程
+# 路径示例：/usr/local/FFTW，或/PARA/pp466/xxxxxx/FFTW
+# 特别注意：安装好后需将FFTW加入环境变量！
+# 在~/.bashrc或~/.bash_profile中，加入如下两行，路径需修改为自己的：
+  export LD_LIBRARY_PATH=/PARA/pp466/Software/FFTW/lib:$LD_LIBRARY_PATH
+  export LDLIBS="-L/PARA/pp466/Software/FFTW/lib -lfftw3"
+# 然后在HOME目录下，source .bashrc (OR .bash_profile)
+
+3. 修改参数和路径
+(1) 所有参数均设置在NOISE_CODE/bin/Config中，
+    运行前需修改main_dir为自己的NoiseCC的路径，
+    修改code_dir为自己的NOISE_CODE/CODE；
+    其他参数看情况修改，主要是滤波范围和想计算的周期
+
+(2) 源码NOISE_CODE/CODE/FTA/aftani_c_pgl/driver_c.c中，
+    将三处路径修改为自己对应的文件夹：(NoiseCC之前的)
+	/PARA/pp466/work/ljt/PKUSummer/NoiseCC/GLOBAL_DISP01/china_phvel.dat
+	/PARA/pp466/work/ljt/PKUSummer/NoiseCC/GLOBAL_DISP01/COR_%s_%s.SAC_PRED
+	然后在aftani_c_pgl/下重新编译：make clean + make
+
+4. 编译所有程序
+第3步改好路径后，在CODE下运行makeall.csh即可，但如果出错不方便查看；
+因此也可进入到CODE下的每个文件夹(有的有两层)，依次make clean + make
+
+5. 可选：安装GMT和pssac2
+画图常用，网上有对应的教程，需设好环境变量
+
+# 注意：如使用天河服务器，可跳过1、2、5步，第4步只需编译aftani_c_pgl即可
+
+
+【运行程序】
+# 在bin目录下运行；不同系统提交任务方式不一样，或直接python亦可
+0. 检查参数设置
+	yhrun python 0check.py
+1. 提取sac相关信息
+	yhrun python 1setSacdb.py
+2. 去仪器响应，截取相同时间窗
+	yhrun python 2rmRespCut.py
+3. 滤波和谱白化
+	yhrun python 3fileterWhiten.py
+4. 互相关
+	yhrun python 4crossCorrelation.py
+5. 叠加
+	yhrun python 5stack.py
+6. 获得因果和非因果信号对称叠加结果
+	yhrun python 6getSym.py
+7. 计算信噪比
+	yhrun python 7SNR.py
+8. 计算频散曲线
+	yhrun python 8getDisperCurve.py
