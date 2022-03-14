@@ -1,0 +1,14 @@
+Calculate group dispersion predictions using global dispersion model from Michael Ritzwoller, Nov. 9, 2009 by James Xu
+disp_curve calculates dispersions between stations for ambient noise correlation
+disp_curve_eq calculates dispersions between events and stations
+
+need int_CUB2_R_* models
+INPUT_MODEL include model file names and period
+period contains the period you wish to calculate
+station.lst contains station name and location.
+
+For disp_curve_eq, you also need to prepare event.lst for event locations.
+
+To compile: make all
+To install in your bin: make install
+To clean up: make clean
